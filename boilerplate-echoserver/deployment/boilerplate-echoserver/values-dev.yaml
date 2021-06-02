@@ -1,0 +1,17 @@
+---
+# Default values for dev, these values are "shallow merged" on top of values.yaml
+#         the contents in this file take priority over the ones in values.yaml
+deployment:
+  # This is setup to route from the nginx-ingress controller which is the actual public interface
+  ingress:
+    hosts:
+      # If we want a dynamic branch-based deployment for dev, good via CI/CD for devs, use this
+      # - host: 'boilerplate-{{ (include "namespace" .) }}.dev.yourdomainhere.com'
+      # If we want a single-static deployment for the dev cluster use this
+      - host: 'boilerplate-echoserver.dev.yourdomainhere.com'
+        paths:
+          - /
+
+  extraEnvs:
+    - name: ENV_SPECIFIC_ENVS_HERE
+      value: "this is values-dev.yaml"

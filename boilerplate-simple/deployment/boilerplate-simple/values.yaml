@@ -1,0 +1,65 @@
+---
+# Default values for deployment, this is necessary because we're using a unified helm subchart
+deployment:
+  # This is the name of the deployment, this is used in a _lot_ of places in the helm charts so lets just specify it
+  name: "boilerplate-simple"
+
+  # How many replicas to have by default
+  replicas: 1
+
+  # What group and repo name we are in gitlab
+  image:
+    # You should probably do this when you use this...
+    # repository: 123123123.dkr.ecr.eu-central-1.amazonaws.com/groupname/reponame
+    # tag: <shasumhere>
+    # OR for testing, This is a simple sample static apache docker container
+    repository: andrewfarley/docker-kubernetes-apache-proxy
+    tag: latest
+    # repository: "gcr.io/google_containers/echoserver"
+    # tag: "1.0"
+    # TEMPORARY FOR DEBUGGING or initialization (eg: of a db)
+    # command: ["/bin/sh"]
+    # args: ["-c", "while true; do echo hello; sleep 10;done"]
+
+  # Environment variables
+  globalEnvs:
+    - name: GLOBAL_ENVS_HERE
+      value: "base_global_envs_on_all_environments_here"
+
+  # deployment container resource requests/limits
+  # this is set VERY low by default, to be aggressive above resource limiting, please override this if necessary
+  # Note: Limits are HARD Limits
+  #       Requests are "soft" limits and are what affects HPA (autoscaling) aggressiveness if HPA is enabled
+  # Note: You ALWAYS want this on any service you deploy in Kubernetes, always.
+  resources:
+    limits:
+     # cpu: 100m  # You can omit the "top end" of CPU limits, to allow the service to "burst" if desired
+     memory: 64Mi
+    requests:
+     cpu: 20m
+     memory: 64Mi
+
+  # By default disable autoscaling, but you can override it on production values file
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+
+  #   # This is for volume mount support
+  #   volumes:
+  #     - name: config-volume
+  #       configMap:
+  #         name: myconfigmapname
+  #
+  #   volumeMounts:
+  #     - name: config-volume
+  #       mountPath: /usr/local/apache2/conf/kubernetes
+
+  # Service definitions, hosting on port 80 in our Docker container by default, but change this if your service uses a different port (eg: 8080)
+  # service:
+  #   targetPort: 80
+
+  # This is a microservice and we want to have incoming public traffic
+  ingress:
+    enabled: true
+    # We want to use the nginx ingress class of "general" for all services by default
+    # nginx_class: "general"

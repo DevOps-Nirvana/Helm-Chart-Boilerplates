@@ -1,0 +1,21 @@
+---
+# Default values for prod, these values are "shallow merged" on top of values.yaml
+#         the contents in this file take priority over the ones in values.yaml
+deployment:
+
+  # Enable autoscaling for production
+  autoscaling:
+    enabled: true
+
+  # This is setup to route from the nginx-ingress controller which is the actual public interface
+  ingress:
+    # For prod if we want to use its own dedicated ingress controller
+    nginx_class: "live"
+    hosts:
+      - host: 'boilerplate-simple.prod.yourdomainhere.com'
+        paths:
+          - /
+
+  extraEnvs:
+    - name: ENV_SPECIFIC_ENVS_HERE
+      value: "this is values-prod.yaml"
