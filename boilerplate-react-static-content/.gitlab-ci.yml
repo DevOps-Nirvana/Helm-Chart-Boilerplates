@@ -1,0 +1,28 @@
+---
+# Include our gitlabci templates that provide all kinds of helpers.  The order matters
+include:
+  - project: 'devops/gitlab-ci-templates'
+    ref: master
+    file: '/base.yml'
+  - project: 'devops/gitlab-ci-templates'
+    ref: master
+    file: '/global-templates.yml'
+  - project: 'devops/gitlab-ci-templates'
+    ref: master
+    file: '/prod-master-auto.yml'
+# Note/TODO: For our tests: See this file
+# - local: '/.gitlab-ci-tests.yml'
+
+# Put variables to tweak build / deploy / job logic
+# variables:
+#   BUILD_DISABLED: "true"         # To temporarily disable building (eg just run tests and deploy)
+#   TEST_DISABLED: "true"          # To temporarily disable testing (eg just run build and deploy)
+#   KUBECTL_DIFF_DISABLED: "true"  # To disable kubectl diff
+#   DEPLOY_DISABLED: "true"        # To temporarily disable deploying (eg just run build and test)
+
+# Build our docker image
+build/docker:
+  extends: .build-docker
+# This is to set docker ARG/ENV variables
+# variables:
+#   KANIKO_BUILD_OPTS: "--build-arg ENV=dev"
