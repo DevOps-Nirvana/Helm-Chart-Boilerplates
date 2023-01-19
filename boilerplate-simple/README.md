@@ -17,6 +17,10 @@ make diff
 make deploy
 ```
 
+Alternatively, see README.md in the deployment folder for commands or view the "Makefile" as well
+
+## Notes
+
 Your service might not immediately be available on the internet, because this "stack" by default requires/uses Nginx Ingress as your Ingress Controller and API Gateway, and requires you set the hostname properly (see values-dev.yaml in deployment/boilerplate-simple).  Nginx Ingress adds a lot of great things, I wouldn't host an HTTP-based service on Kubernetes without it.  You may need to either go install and configure Nginx Ingress first, or you may need to change the `service.type: LoadBalancer` in the values file if you wish to use this without the default Nginx Ingress recommendation.
 
 Make any adjustments you want to either the values.yaml and values-dev.yaml files, and/or create another "env" by making a new values-ENVNAME.yaml and changing the configuration around to deploy to that environment.  See values-prod.yml for an example.  Run `make diff` every time you make adjustments to the values files to see what it would change in Kubernetes.  For more info about what is possible to configure in the values files, please see the [Default upstream values.yaml file](https://github.com/DevOps-Nirvana/Universal-Kubernetes-Helm-Charts/blob/master/charts/deployment/values.yaml). Basically you can configure and override everything, but everything has sane defaults.
