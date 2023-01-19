@@ -1,0 +1,3083 @@
+{
+  "__inputs": [
+
+  ],
+  "__requires": [
+
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": false,
+        "hide": false,
+        "iconColor": "#96D98D",
+        "name": "deploy",
+        "showIn": 0,
+        "tags": [
+          "deploy",
+          "$environment"
+        ],
+        "type": "tags"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": false,
+        "hide": false,
+        "iconColor": "#FFEE52",
+        "name": "canary-deploy",
+        "showIn": 0,
+        "tags": [
+          "deploy",
+          "${environment}-cny"
+        ],
+        "type": "tags"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": false,
+        "hide": false,
+        "iconColor": "#CA95E5",
+        "name": "feature-flags",
+        "showIn": 0,
+        "tags": [
+          "feature-flag",
+          "${environment}"
+        ],
+        "type": "tags"
+      }
+    ]
+  },
+  "description": "Uploaded by https://gitlab.com/gitlab-com/runbooks/-/jobs/3271110524 at Thu Nov  3 17:38:42 UTC 2022",
+  "editable": false,
+  "gnetId": null,
+  "graphTooltip": 1,
+  "hideControls": false,
+  "id": null,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": "stage_group:Pipeline Insights",
+      "targetBlank": false,
+      "title": "Group Dashboards",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": "type:api",
+      "targetBlank": false,
+      "title": "API Detail",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": "type:web",
+      "targetBlank": false,
+      "title": "Web Detail",
+      "type": "dashboards",
+      "url": ""
+    },
+    {
+      "asDropdown": true,
+      "icon": "dashboard",
+      "includeVars": true,
+      "keepTime": true,
+      "tags": "type:git",
+      "targetBlank": false,
+      "title": "Git Detail",
+      "type": "dashboards",
+      "url": ""
+    }
+  ],
+  "panels": [
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 100
+      },
+      "id": 2,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Error Budget (past 28 days)",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "displayName": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.9995
+              }
+            ]
+          },
+          "unit": "percentunit"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 100
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "%",
+          "refId": "A"
+        }
+      ],
+      "title": "Availability",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": "2",
+          "displayName": "",
+          "mappings": [
+            {
+              "id": 0,
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "🥵 Unhealthy"
+                },
+                "to": 0.9995
+              },
+              "type": "range"
+            },
+            {
+              "id": 1,
+              "options": {
+                "from": 0.9995,
+                "result": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "🥳 Healthy"
+                },
+                "to": 1
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.9995
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 0,
+        "y": 104
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": "2",
+          "displayName": "Target:",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "gray"
+              }
+            ]
+          },
+          "unit": "percent"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 0,
+        "y": 105.5
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "0.9995 * 100.0",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": -315360000
+              },
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 100
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "# The number of seconds allowed to be spent in 28d\n1209.5999999998667\n-\n(\n  (\n     1 - clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n\n  ) * 2419200\n)\n\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "Budget remaining",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": "2",
+          "displayName": "",
+          "mappings": [
+            {
+              "id": 0,
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "🥵 Unhealthy"
+                },
+                "to": 0.9995
+              },
+              "type": "range"
+            },
+            {
+              "id": 1,
+              "options": {
+                "from": 0.9995,
+                "result": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "🥳 Healthy"
+                },
+                "to": 1
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.9995
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 6,
+        "y": 104
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "28d budget:",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "gray"
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 6,
+        "y": 105.5
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "# The number of seconds allowed to be spent in 28d\n1209.5999999998667\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "",
+          "thresholds": {
+            "mode": "absolute"
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 100
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "(\n  (\n     1 - clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n\n  ) * 2419200\n)\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "expr": "# The number of seconds allowed to be spent in 28d\n1209.5999999998667\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "budget",
+          "refId": "B"
+        }
+      ],
+      "title": "Budget spent",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "B",
+            "mappings": [
+              {
+                "fieldName": "budget",
+                "handlerKey": "threshold1"
+              }
+            ]
+          }
+        }
+      ],
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": "2",
+          "displayName": "",
+          "mappings": [
+            {
+              "id": 0,
+              "options": {
+                "from": 0,
+                "result": {
+                  "color": "red",
+                  "index": 0,
+                  "text": "🥵 Unhealthy"
+                },
+                "to": 0.9995
+              },
+              "type": "range"
+            },
+            {
+              "id": 1,
+              "options": {
+                "from": 0.9995,
+                "result": {
+                  "color": "green",
+                  "index": 1,
+                  "text": "🥳 Healthy"
+                },
+                "to": 1
+              },
+              "type": "range"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 0.9995
+              }
+            ]
+          },
+          "unit": "none"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 12,
+        "y": 104
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "value"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "clamp_max(\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        -\n        sum_over_time(\n          gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ), 'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  )\n  /\n  sum by ()(\n    sum by (stage_group,component) (\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        ),\n        'sli_kind', 'apdex', '', ''\n      )\n      or\n      label_replace(\n        sum_over_time(\n          gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n        )\n        and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]),\n        'sli_kind', 'error', '', ''\n      )\n    ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n  ),\n1)\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 0,
+          "displayName": "28d budget:",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "gray"
+              }
+            ]
+          },
+          "unit": "s"
+        }
+      },
+      "gridPos": {
+        "h": 1.5,
+        "w": 6,
+        "x": 12,
+        "y": 105.5
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "vertical",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "7",
+      "targets": [
+        {
+          "expr": "# The number of seconds allowed to be spent in 28d\n1209.5999999998667\n",
+          "format": "time_series",
+          "instant": true,
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "",
+          "refId": "A"
+        }
+      ],
+      "title": "",
+      "transparent": false,
+      "type": "stat"
+    },
+    {
+      "content": "### [Error budget](https://about.gitlab.com/handbook/engineering/error-budgets/)\n\nThese error budget panels show an aggregate of SLIs across all components.\nHowever, not all components have been implemented yet.\n\nThe [handbook](https://about.gitlab.com/handbook/engineering/error-budgets/)\nexplains how these budgets are used.\n\nRead more about how the error budgets are calculated in the\n[stage group dashboard documentation](https://docs.gitlab.com/ee/development/stage_group_dashboards.html#error-budget).\n\nThe error budget is compared to our SLO of 99.95% and is always in\na range of 28 days from the selected end date in Grafana.\n\n### Availability\n\nThe availability shows the percentage of operations labeled with one of the\ncategories owned by Pipeline Insights with satisfactory completion.\n\n### Budget remaining\n\nThe error budget in minutes is calculated based on the 99.95%.\nThere are 40320 minutes in 28 days, we allow 0.05% of failures, which\nmeans the budget in minutes is 20.159999999997776 minutes.\n\nThe budget remaining shows how many minutes have not been spent in the\npast 28 days.\n\n### Minutes spent\n\nThis shows the total minutes spent over the past 28 days.\n\nFor example, if there were 403200 (28 * 24 * 60) operations in 28 days.\nThis would be 1 every minute. If 10 of those were unsatisfactory, that\nwould mean 10 minutes of the budget were spent.\n",
+      "gridPos": {
+        "h": 7,
+        "w": 6,
+        "x": 18,
+        "y": 100
+      },
+      "id": 12,
+      "mode": "markdown",
+      "title": "Info",
+      "type": "text"
+    },
+    {
+      "collapse": true,
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 150
+      },
+      "id": 13,
+      "panels": [
+        {
+          "columns": [
+
+          ],
+          "datasource": "$PROMETHEUS_DS",
+          "description": "Number of failures contributing to the budget send per component and type ",
+          "fieldConfig": {
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "type"
+                },
+                "properties": [
+                  {
+                    "id": "links",
+                    "value": [
+                      {
+                        "targetBlank": true,
+                        "title": "${__value.text} overview: See ${__data.fields.component} SLI for details",
+                        "url": "https://dashboards.gitlab.net/d/${__value.text}-main"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "failures past 28 days"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "locale"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "measurements past 28 days"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "locale"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 8,
+            "x": 0,
+            "y": 151
+          },
+          "id": 14,
+          "links": [
+
+          ],
+          "options": {
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "failures past 28 days"
+              }
+            ]
+          },
+          "styles": null,
+          "targets": [
+            {
+              "expr": "ceil(\n  (\n    sum by (component,type,violation_type) (\n      label_replace(\n        sum by (component,type)(\n          sum by (component,stage_group,type)(\n            sum_over_time(\n              gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n            ) -\n            # Request with satisfactory apdex\n            sum_over_time(\n              gitlab:component:stage_group:execution:apdex:success:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n            )\n          ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n        ),\n        'violation_type', 'apdex' , '', ''\n      )\n      or\n      label_replace(\n        sum by (component,type)(\n          sum by (component,stage_group,type)(\n            sum_over_time(\n              gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n            )\n          ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n        ),\n        'violation_type', 'error' , '', ''\n      )\n    ) > 0\n  ) * 60\n)\n",
+              "format": "table",
+              "instant": true,
+              "interval": "1m",
+              "intervalFactor": 3,
+              "legendFormat": "",
+              "refId": "A"
+            },
+            {
+              "expr": "ceil(\n  (\n    sum by (component,type,violation_type) (\n      label_replace(\n        sum by (component,type)(\n          sum by (component,stage_group,type)(\n            sum_over_time(\n              gitlab:component:stage_group:execution:apdex:weight:score_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n            )\n          ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n        ),\n        'violation_type', 'apdex' , '', ''\n      )\n      or\n      label_replace(\n        sum by (component,type)(\n          sum by (component,stage_group,type)(\n            sum_over_time(\n              gitlab:component:stage_group:execution:ops:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d]\n            )\n            and sum_over_time(gitlab:component:stage_group:execution:error:rate_1h{environment=\"$environment\",monitor=\"global\",stage=\"$stage\",stage_group=\"pipeline_insights\"}[28d])\n          ) unless on (stage_group,component) gitlab:ignored_component:stage_group\n        ),\n        'violation_type', 'error' , '', ''\n      )\n    ) > 0\n  ) * 60\n)\n",
+              "format": "table",
+              "instant": true,
+              "interval": "1m",
+              "intervalFactor": 3,
+              "legendFormat": "",
+              "refId": "B"
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Budget failures",
+          "transformations": [
+            {
+              "id": "merge"
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true
+                },
+                "indexByName": {
+                  "Value #A": 3,
+                  "Value #B": 4,
+                  "component": 2,
+                  "type": 1,
+                  "violation_type": 0
+                },
+                "renameByName": {
+                  "Value #A": "failures past 28 days",
+                  "Value #B": "measurements past 28 days"
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "content": "This table shows the failures that contribute to the spend of the error budget.\nFixing the top item in this table will have the biggest impact on the\nbudget spend.\n\nA failure is one of 2 types:\n\n- **error**: An operation that failed: 500 response, failed background job.\n- **apdex**: This means an operation that succeeded, but did not perform within the set threshold.\n\nSee the [developer documentation](https://gitlab.com/gitlab-org/gitlab/-/blob/master/doc/development/stage_group_dashboards.md#error-budget)\nto learn more about this.\n\nThe component refers to the component in our stack where the violation occurred.\nThe most common ones are:\n\n- **puma**: This component signifies requests handled by rails\n- **sidekiq_execution**: This component signifies background jobs executed by Sidekiq\n\nTo find the endpoint that is attributing to the budget spend and a violation type\nwe can use the logs over a 7 day range. Links for puma and sidekiq are available on the right.\nThese logs list the endpoints that had the most violations over the past 7 days.\n\nThe \"Other\" row is the sum of all the other violations excluding the top ones\nthat are listed.\n",
+          "datasource": null,
+          "gridPos": {
+            "h": 10,
+            "w": 8,
+            "x": 8,
+            "y": 151
+          },
+          "id": 15,
+          "mode": "markdown",
+          "title": "Info",
+          "type": "text"
+        },
+        {
+          "content": "##### [Rails Requests Apdex](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=table&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:exists,type:json.duration_s,value:exists),query:(exists:(field:json.duration_s))),(meta:(key:exists,type:json.target_duration_s,value:exists),query:(exists:(field:json.target_duration_s)))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'3',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.request_urgency.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'3',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.target_duration_s,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'3',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,id:'3',params:(customLabel:'Operations+over+specified+threshold+(apdex)',field:json.duration_s,json:'{\"script\":+\"doc[!'json.duration_s!'].value+>+doc[!'json.target_duration_s!'].value+?+1+:+0\"}'),schema:metric,type:sum))))&_g=(time:(from:'now-7d',to:'now'))): slow requests\n\nThis shows the number of requests exceeding the request duration thresholds\nconfigured per endpoint over the past 7 days.\n\nThe threshold depends on the [configurable request urgency](https://docs.gitlab.com/ee/development/application_slis/rails_request_apdex.html#adjusting-request-urgency).\n\n##### [Puma Errors](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=table&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.status,params:(gte:500),type:range),query:(range:(json.status:(gte:500))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.request_urgency.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.target_duration_s,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms))))&_g=(time:(from:'now-7d',to:'now'))): failing requests\n\nThis shows the number of Rails requests that failed per endpoint over\nthe past 7 days.\n\n##### [All request violations](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=table&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:exists,type:json.duration_s,value:exists),query:(exists:(field:json.duration_s))),(meta:(key:exists,type:json.target_duration_s,value:exists),query:(exists:(field:json.target_duration_s)))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'5',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.request_urgency.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'5',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,params:(field:json.target_duration_s,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'5',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms),(enabled:!t,id:'3',params:(customLabel:'Operations+over+specified+threshold+(apdex)',field:json.duration_s,json:'{\"script\":+\"doc[!'json.duration_s!'].value+>+doc[!'json.target_duration_s!'].value+?+1+:+0\"}'),schema:metric,type:sum),(enabled:!t,id:'4',params:(customLabel:'Failing+requests+(error)',field:json.status,json:'{\"script\":+\"doc[!'json.status!'].value+>=+500+?+1+:+0\"}'),schema:metric,type:sum),(enabled:!t,id:'5',params:(customLabel:'Total+violations+(apdex+%2B+error)',field:json.duration_s,json:'{\"script\":+\"int+errors+=+doc[!'json.status!'].value+>=+500+?+1+:+0;\\nint+slowRequests+=+doc[!'json.duration_s!'].value+>+doc[!'json.target_duration_s!'].value+?+1+:+0;\\nreturn+errors+%2B+slowRequests;\\n\"}'),schema:metric,type:sum))))&_g=(time:(from:'now-7d',to:'now'))): slow requests + failing requests\n\nThis slow loading table shows the endpoints that errored or where slow the most often\nin the past 7 days.\n\nIf `rails_requests` or `puma` are at the top of the table on the left side, then\nthis will show you the top endpoints to look into.\n\n##### [Sidekiq Execution Apdex](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=table&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.job_status,params:done,type:phrase),query:(match:(json.job_status:(query:done,type:phrase))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,params:(filters:!((input:(language:kuery,query:'json.shard:+\"urgent\"+AND+json.duration_s+>+10'),label:'Jobs+exceeding+10s'),(input:(language:kuery,query:'not+json.shard:+\"urgent\"+AND+json.duration_s+>+300'),label:'Jobs+exceeding+300s'))),schema:split,type:filters),(enabled:!t,params:(field:json.class.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms))))&_g=(time:(from:'now-7d',to:'now'))): slow jobs\n\nThis shows the number of jobs per worker that took longer than their threshold to\nexecute over the past 7 days.\nFor urgent jobs the threshold is 10s, this is the table on the left.\nFor other jobs the threshold is 300s, this is the table on the right.\n\n##### [Sidekiq Execution Errors](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=table&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.job_status,params:fail,type:phrase),query:(match:(json.job_status:(query:fail,type:phrase))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,params:(field:json.class.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:bucket,type:terms))))&_g=(time:(from:'now-7d',to:'now'))): failing jobs\n\nThis shows the number of jobs per worker that failed over the past 7 days.\nThis includes retries: if a job with a was retried 3 times, before exhausting\nits retries, this counts as 3 failures towards the budget.\n",
+          "datasource": null,
+          "gridPos": {
+            "h": 10,
+            "w": 8,
+            "x": 16,
+            "y": 151
+          },
+          "id": 16,
+          "mode": "markdown",
+          "title": "Failure log links",
+          "type": "text"
+        }
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Budget spend attribution",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 201
+      },
+      "id": 17,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Rails Request Rates",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 202
+      },
+      "id": 18,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  rate(gitlab_transaction_duration_seconds_count{\n    environment='$environment',\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api',\n    controller=~'$controller',\n    action=~'$action'\n  }[$__interval])\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API Request Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Requests per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 8,
+        "y": 202
+      },
+      "id": 19,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  rate(gitlab_transaction_duration_seconds_count{\n    environment='$environment',\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web',\n    controller=~'$controller',\n    action=~'$action'\n  }[$__interval])\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB Request Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Requests per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "content": "* [📖 Kibana: Kibana Rails logs](https://log.gprd.gitlab.net/app/kibana#/discover?_a=(columns:!(json.status,json.method,json.meta.caller_id,json.meta.feature_category,json.path,json.request_urgency,json.duration_s,json.target_duration_s),filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),index:'7092c4e2-4eb5-46f2-8305-a7da2edad090')&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📖 Kibana: Kibana Rails slow request logs](https://log.gprd.gitlab.net/app/kibana#/discover?_a=(columns:!(json.status,json.method,json.meta.caller_id,json.meta.feature_category,json.path,json.request_urgency,json.duration_s,json.target_duration_s),filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:exists,type:json.target_duration_s,value:exists),query:(exists:(field:json.target_duration_s))),(meta:(key:exists,type:json.duration_s,value:exists),query:(exists:(field:json.duration_s))),!((meta:(key:query,type:custom,value:'{\"bool\":+{\"minimum_should_match\":+1,+\"should\":+[{\"script\":+{\"script\":+{\"source\":+\"doc[!'json.duration_s!'].value+>+doc[!'json.target_duration_s!'].value\"}}}]}}'),query:(bool:(minimum_should_match:1,should:!((script:(script:(source:'doc[!'json.duration_s!'].value+>+doc[!'json.target_duration_s!'].value'))))))))),index:'7092c4e2-4eb5-46f2-8305-a7da2edad090',sort:!(!(json.duration_s,desc)))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📖 Kibana: Kibana Rails failed request logs](https://log.gprd.gitlab.net/app/kibana#/discover?_a=(columns:!(json.status,json.method,json.meta.caller_id,json.meta.feature_category,json.path,json.request_urgency,json.duration_s,json.target_duration_s),filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.status,params:(gte:500),type:range),query:(range:(json.status:(gte:500))))),index:'7092c4e2-4eb5-46f2-8305-a7da2edad090')&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails requests](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails failed requests](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.status,params:(gte:500),type:range),query:(range:(json.status:(gte:500))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails sum latency aggregated](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s),schema:metric,type:sum),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'Sum+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails sum latency aggregated (split)](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s),schema:metric,type:sum),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'Sum+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails percentile latency aggregated](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s,percents:!(95)),schema:metric,type:percentiles),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'p95+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Rails percentile latency aggregated (split)](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=7092c4e2-4eb5-46f2-8305-a7da2edad090&_a=(filters:!((meta:(key:json.subcomponent,negate:!t,params:graphql_json,type:phrase),query:(match:(json.subcomponent:(query:graphql_json,type:phrase)))),(meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s,percents:!(95)),schema:metric,type:percentiles),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.caller_id.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderAgg:(enabled:!t,id:'3-orderAgg',params:(field:json.duration_s),schema:orderAgg,type:sum),orderBy:custom,otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'p95+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [🐞 Sentry Releases: gitlab/gitlabcom](https://sentry.gitlab.net/gitlab/gitlabcom/releases?environment=${environment})\n* [🐞 Sentry issues: code_testing](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Acode_testing+stage%3A${stage})\n* [🐞 Sentry issues: performance_testing](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Aperformance_testing+stage%3A${stage})\n* [🐞 Sentry issues: build_artifacts](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Abuild_artifacts+stage%3A${stage})\n* [🐞 Sentry issues: review_apps](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Areview_apps+stage%3A${stage})\n",
+      "datasource": null,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 202
+      },
+      "id": 20,
+      "mode": "markdown",
+      "title": "Extra links",
+      "type": "text"
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 301
+      },
+      "id": 21,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Rails 95th Percentile Request Latency",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 302
+      },
+      "id": 22,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(\n  avg_over_time(\n    controller_action:gitlab_transaction_duration_seconds:p95{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='api'\n    }[$__interval]\n  )\n) by (controller, action)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API 95th Percentile Request Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 302
+      },
+      "id": 23,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(\n  avg_over_time(\n    controller_action:gitlab_transaction_duration_seconds:p95{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='web'\n    }[$__interval]\n  )\n) by (controller, action)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB 95th Percentile Request Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 401
+      },
+      "id": 24,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Rails Error Rates (accumulated by components)",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 402
+      },
+      "id": 25,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (component) (\n  gitlab:component:feature_category:execution:error:rate_5m{\n    environment='$environment',\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api'\n  }\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "api error rate",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API Error Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Requests per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 402
+      },
+      "id": 26,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (component) (\n  gitlab:component:feature_category:execution:error:rate_5m{\n    environment='$environment',\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web'\n  }\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "web error rate",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB Error Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Requests per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 501
+      },
+      "id": 27,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "SQL Queries Per Action",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average amount of SQL queries performed by a controller action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 502
+      },
+      "id": 28,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  controller_action:gitlab_sql_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api'\n  }\n)\n/\nsum by (controller, action) (\n  controller_action:gitlab_transaction_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api'\n  }\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API SQL Queries per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Queries",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average amount of SQL queries performed by a controller action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 502
+      },
+      "id": 29,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  controller_action:gitlab_sql_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web'\n  }\n)\n/\nsum by (controller, action) (\n  controller_action:gitlab_transaction_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web'\n  }\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB SQL Queries per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Queries",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 601
+      },
+      "id": 30,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "SQL Latency Per Action",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average sum of all SQL query latency accumulated by a controller action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 602
+      },
+      "id": 31,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg_over_time(\n  controller_action:gitlab_sql_duration_seconds_sum:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api'\n  }[$__interval]\n)\n/\navg_over_time(\n  controller_action:gitlab_transaction_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='api'\n  }[$__interval]\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API SQL Latency per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average sum of all SQL query latency accumulated by a controller action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 602
+      },
+      "id": 32,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg_over_time(\n  controller_action:gitlab_sql_duration_seconds_sum:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web'\n  }[$__interval]\n)\n/\navg_over_time(\n  controller_action:gitlab_transaction_duration_seconds_count:rate1m{\n    environment=\"$environment\",\n    stage='$stage',\n    action=~\"$action\",\n    controller=~\"$controller\",\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n    type='web'\n  }[$__interval]\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB SQL Latency per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 701
+      },
+      "id": 33,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "SQL Latency Per Query",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average latency of individual SQL queries\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 702
+      },
+      "id": 34,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  rate(\n    gitlab_sql_duration_seconds_sum{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='api'\n    }[$__interval]\n  )\n)\n/\nsum by (controller, action) (\n  rate(\n    gitlab_sql_duration_seconds_count{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='api'\n    }[$__interval]\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API SQL Latency per Query",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average latency of individual SQL queries\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 702
+      },
+      "id": 35,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action) (\n  rate(\n    gitlab_sql_duration_seconds_sum{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='web'\n    }[$__interval]\n  )\n)\n/\nsum by (controller, action) (\n  rate(\n    gitlab_sql_duration_seconds_count{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='web'\n    }[$__interval]\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB SQL Latency per Query",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": "",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 801
+      },
+      "id": 36,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Caches per Action",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average total number of caching operations (Read & Write) per action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 0,
+        "y": 802
+      },
+      "id": 37,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action, operation) (\n  rate(\n    gitlab_cache_operations_total{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='api'\n    }[$__interval]\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{operation}} - {{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "API Caches per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Operations",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "Average total number of caching operations (Read & Write) per action.\n",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 12,
+        "x": 12,
+        "y": 802
+      },
+      "id": 38,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (controller, action, operation) (\n  rate(\n    gitlab_cache_operations_total{\n      environment=\"$environment\",\n      stage='$stage',\n      action=~\"$action\",\n      controller=~\"$controller\",\n      feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)',\n      type='web'\n    }[$__interval]\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{operation}} - {{controller}}#{{action}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "WEB Caches per Action",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Operations",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 901
+      },
+      "id": 39,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Sidekiq",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "The rate (Jobs per Second) at which jobs are completed after dequeue",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 0,
+        "y": 902
+      },
+      "id": 40,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (worker) (\n  rate(sidekiq_jobs_completion_seconds_count{\n    environment=\"$environment\",\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)'\n  }[$__interval])\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{worker]}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Sidekiq Completion Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Jobs per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 2,
+      "description": "The rate (Jobs per Second) at which jobs fail after dequeue",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 8,
+        "y": 902
+      },
+      "id": 41,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (worker) (\n  rate(sidekiq_jobs_failed_total{\n    environment=\"$environment\",\n    stage='$stage',\n    feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)'\n  }[$__interval])\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{worker]}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Sidekiq Error Rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Jobs per Second",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "content": "* [📖 Kibana: Kibana Sidekiq logs](https://log.gprd.gitlab.net/app/kibana#/discover?_a=(columns:!(json.class,json.queue,json.meta.project,json.job_status,json.scheduling_latency_s,json.duration_s),filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),index:'AWNABDRwNDuQHTm2tH6l')&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📖 Kibana: Kibana Sidekiq failed request logs](https://log.gprd.gitlab.net/app/kibana#/discover?_a=(columns:!(json.class,json.queue,json.meta.project,json.job_status,json.scheduling_latency_s,json.duration_s),filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.job_status,params:fail,type:phrase),query:(match:(json.job_status:(query:fail,type:phrase))))),index:'AWNABDRwNDuQHTm2tH6l')&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq requests](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq failed requests](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps)))))),(meta:(key:json.job_status,params:fail,type:phrase),query:(match:(json.job_status:(query:fail,type:phrase))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(),schema:metric,type:count),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq sum latency aggregated](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s),schema:metric,type:sum),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.project.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'Sum+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq sum latency aggregated (split)](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s),schema:metric,type:sum),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.project.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderBy:'1',otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'Sum+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq percentile latency aggregated](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s,percents:!(95)),schema:metric,type:percentiles),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'p95+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [📈 Kibana: Kibana Sidekiq percentile latency aggregated (split)](https://log.gprd.gitlab.net/app/kibana#/visualize/create?type=line&indexPattern=AWNABDRwNDuQHTm2tH6l&_a=(filters:!((meta:(key:json.meta.feature_category,params:!(code_testing,performance_testing,build_artifacts,review_apps),type:phrases),query:(bool:(minimum_should_match:1,should:!((match_phrase:(json.meta.feature_category:code_testing)),(match_phrase:(json.meta.feature_category:performance_testing)),(match_phrase:(json.meta.feature_category:build_artifacts)),(match_phrase:(json.meta.feature_category:review_apps))))))),query:(language:kuery,query:''),vis:(aggs:!((enabled:!t,id:'1',params:(field:json.duration_s,percents:!(95)),schema:metric,type:percentiles),(enabled:!t,id:'2',params:(drop_partials:!t,extended_bounds:(),field:json.time,interval:auto,min_doc_count:1,scaleMetricValues:!f,timeRange:(from:'${__from:date:iso}',to:'${__to:date:iso}'),useNormalizedEsInterval:!t),schema:segment,type:date_histogram),(enabled:!t,id:'3',params:(field:json.meta.project.keyword,missingBucket:!f,missingBucketLabel:Missing,order:desc,orderAgg:(enabled:!t,id:'3-orderAgg',params:(field:json.duration_s),schema:orderAgg,type:sum),orderBy:custom,otherBucket:!t,otherBucketLabel:Other,size:5),schema:group,type:terms)),params:(valueAxes:!((id:'ValueAxis-1',name:'LeftAxis-1',position:left,scale:(mode:normal,type:linear),show:!t,style:(),title:(text:'p95+Request+Duration:+json.duration_s'),type:value)))))&_g=(time:(from:'${__from:date:iso}',to:'${__to:date:iso}')))\n* [🐞 Sentry Releases: gitlab/gitlabcom](https://sentry.gitlab.net/gitlab/gitlabcom/releases?environment=${environment})\n* [🐞 Sentry sidekiq issues: code_testing](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Acode_testing+stage%3A${stage}+type%3Asidekiq)\n* [🐞 Sentry sidekiq issues: performance_testing](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Aperformance_testing+stage%3A${stage}+type%3Asidekiq)\n* [🐞 Sentry sidekiq issues: build_artifacts](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Abuild_artifacts+stage%3A${stage}+type%3Asidekiq)\n* [🐞 Sentry sidekiq issues: review_apps](https://sentry.gitlab.net/gitlab/gitlabcom/issues?environment=${environment}&query=feature_category%3Areview_apps+stage%3A${stage}+type%3Asidekiq)\n",
+      "datasource": null,
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 902
+      },
+      "id": 42,
+      "mode": "markdown",
+      "title": "Extra links",
+      "type": "text"
+    },
+    {
+      "collapse": false,
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 1000
+      },
+      "id": 43,
+      "panels": [
+
+      ],
+      "repeat": null,
+      "repeatIteration": null,
+      "repeatRowId": null,
+      "showTitle": true,
+      "title": "Artifact Parser metrics",
+      "titleSize": "h6",
+      "type": "row"
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 0,
+      "description": "The number of parsers that ran per second",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 1001
+      },
+      "id": 44,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum by (parser) (\n  rate(\n   ci_report_parser_duration_seconds_count{environment='$environment', stage='$stage', parser=~'(Gitlab::Ci::Parsers::Coverage::Cobertura|Gitlab::Ci::Parsers::Test::Junit|Gitlab::Ci::Parsers::Accessibility::Pa11y)'\n}[$__interval]\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{ parser }}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Parser rate",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Number of parses",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "aliasColors": {
+      },
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "$PROMETHEUS_DS",
+      "decimals": 0,
+      "description": "The 95th Percentile of parser duration",
+      "fill": 0,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 1011
+      },
+      "id": 45,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "hideEmpty": true,
+        "max": true,
+        "min": true,
+        "rightSide": false,
+        "show": true,
+        "sideWidth": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 2,
+      "links": [
+
+      ],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "repeat": null,
+      "seriesOverrides": [
+
+      ],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95,\n  sum by (parser, le) (\n    rate(\n      ci_report_parser_duration_seconds_bucket{environment='$environment', stage='$stage', parser=~'(Gitlab::Ci::Parsers::Coverage::Cobertura|Gitlab::Ci::Parsers::Test::Junit|Gitlab::Ci::Parsers::Accessibility::Pa11y)'\n}[$__interval]\n    )\n  )\n)\n",
+          "format": "time_series",
+          "interval": "1m",
+          "intervalFactor": 3,
+          "legendFormat": "{{ parser }}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [
+
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "P95 parser duration",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": [
+
+        ]
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": "Parser duration in seconds",
+          "logBase": 1,
+          "max": null,
+          "min": 0,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": 1,
+          "min": 0,
+          "show": false
+        }
+      ]
+    },
+    {
+      "content": "Made with ❤️ and [Grafonnet](https://github.com/grafana/grafonnet-lib). [Contribute to this dashboard on GitLab.com](https://gitlab.com/gitlab-com/runbooks/blob/master/dashboards)\n",
+      "datasource": null,
+      "gridPos": {
+        "h": 2,
+        "w": 24,
+        "x": 0,
+        "y": 110000
+      },
+      "id": 46,
+      "mode": "markdown",
+      "title": "Source",
+      "type": "text"
+    }
+  ],
+  "refresh": "",
+  "rows": [
+
+  ],
+  "schemaVersion": 16,
+  "style": "light",
+  "tags": [
+    "managed",
+    "stage-groups",
+    "feature_category",
+    "stage_group:Pipeline Insights"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "Global",
+          "value": "Global"
+        },
+        "hide": 0,
+        "label": null,
+        "name": "PROMETHEUS_DS",
+        "options": [
+
+        ],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "gprd",
+          "value": "gprd"
+        },
+        "datasource": "$PROMETHEUS_DS",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "environment",
+        "options": [
+
+        ],
+        "query": "label_values(gitlab_service_ops:rate, environment)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [
+
+        ],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "text": "main",
+          "value": "main"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "",
+        "multi": false,
+        "name": "stage",
+        "options": [
+          {
+            "text": "main",
+            "value": "main"
+          },
+          {
+            "text": "cny",
+            "value": "cny"
+          },
+          {
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "main,cny,",
+        "refresh": 0,
+        "type": "custom"
+      },
+      {
+        "allValue": ".*",
+        "current": {
+        },
+        "datasource": "$PROMETHEUS_DS",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "controller",
+        "options": [
+
+        ],
+        "query": "label_values(controller_action:gitlab_transaction_duration_seconds_count:rate1m{environment='$environment', feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)'}, controller)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [
+
+        ],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": ".*",
+        "current": {
+        },
+        "datasource": "$PROMETHEUS_DS",
+        "hide": 0,
+        "includeAll": true,
+        "label": null,
+        "multi": true,
+        "name": "action",
+        "options": [
+
+        ],
+        "query": "label_values(controller_action:gitlab_transaction_duration_seconds_count:rate1m{environment='$environment', controller=~'$controller', feature_category=~'(code_testing|performance_testing|build_artifacts|review_apps)'}, action)",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "tagValuesQuery": "",
+        "tags": [
+
+        ],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h/m",
+    "to": "now/m"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "10m",
+      "15m",
+      "30m"
+    ],
+    "time_options": [
+      "5m",
+      "15m",
+      "1h",
+      "6h",
+      "12h",
+      "24h",
+      "2d",
+      "7d",
+      "30d"
+    ]
+  },
+  "timezone": "utc",
+  "title": "stage-groups: Pipeline Insights: Group dashboard",
+  "uid": "stage-groups-pipeline_insights",
+  "version": 627
+}

@@ -1,0 +1,21 @@
+{{ if .Values.enableGitlabDashboards }}
+
+{{- $currentScope := . -}}
+{{ range $path, $bytes := .Files.Glob "gitlab-dashboards/**.json" }}
+{{ with $currentScope }}
+{{ $dashboard := splitList "." (base $path) | first }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gitlab-{{ $dashboard }}
+  labels:
+    grafana_dashboard: gitlab-{{ $dashboard }}
+    app: grafana
+data:
+{{ base $path | indent 2 }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end -}}
+{{- end -}}
+
+{{- end }}

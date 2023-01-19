@@ -1,0 +1,8 @@
+dependencies:
+- alias: grafana
+  name: grafana
+  # Latest as of Sept 7 2022
+  version: 6.36.3
+  repository: "https://grafana.github.io/helm-charts"
+  # helm repo add grafana https://grafana.github.io/helm-charts
+  # helm search repo grafana

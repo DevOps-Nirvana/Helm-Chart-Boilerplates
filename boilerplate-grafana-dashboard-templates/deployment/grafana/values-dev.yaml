@@ -1,0 +1,84 @@
+grafana:
+  serviceAccount:
+   annotations:
+     eks.amazonaws.com/role-arn: arn:aws:iam::123123123:role/grafana-123123123123  # If you make one for CloudWatch Metrics to work automatically
+
+  env:
+    GF_EXPLORE_ENABLED: "true"
+    GF_SERVER_ROOT_URL: "https://companyname.companyname.com"
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: prometheus
+        type: prometheus
+        url: http://prometheus-server.infrastructure.svc.cluster.local
+        access: proxy
+        isDefault: true
+      - name: "cloudwatch"
+        type: cloudwatch
+        jsonData:
+          authType: keys
+          defaultRegion: us-east-1
+        # This allows readonly access to CloudWatch so no worries about committing this to the repo
+        secureJsonData:
+          accessKey: "XXXXXXXX"
+          secretKey: "YYYYYYYYYYYYYYYY"
+        isDefault: false
+      # - name: Loki
+      #   type: loki
+      #   access: proxy
+      #   url: http://localhost:3100
+      #   jsonData:
+      #     maxLines: 1000
+
+  grafana.ini:
+    server:
+      root_url: https://metrics.companyname-dev.com
+
+    # # Once you login once and make one of the users an admin then you can disable basic auth
+    # auth.basic:
+    #   enabled: true
+    #   disable_login_form: true
+    #
+    # auth.google:
+    #   enabled: "true"
+    #   client_id: "clientidgohere.apps.googleusercontent.com"
+    #   client_secret: "clientsecrethere"
+    #   scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+    #   auth_url: https://accounts.google.com/o/oauth2/auth
+    #   token_url: https://accounts.google.com/o/oauth2/token
+    #   allowed_domains: ""
+    #   allow_sign_up: true
+    #
+    # auth.generic_oauth:
+    #   enabled: "true"
+    #   client_id: "puts.random.stuff.here"
+    #   client_secret: "secretgoesHere"
+    #   scopes: "user:email"
+    #   auth_url: "https://oauth.website.com/oauth2/start?rd=https://grafana.website.com/login/generic_oauth"
+    #   token_url: ""
+    #   api_url: "https://oauth.website.com/oauth2/userinfo"
+    #   allowed_domains: ""
+    #   allow_sign_up: "true"
+    #   send_client_credentials_via_post: "false"
+    #
+    # auth.gitlab:
+    #   enabled: true
+    #   allow_sign_up: true
+    #   client_id: asdasdasd
+    #   client_secret: asdasdasd
+    #   scopes: read_user
+    #   auth_url: https://gitlab.website.com/oauth/authorize
+    #   token_url: https://gitlab.website.com/oauth/token
+    #   api_url: https://gitlab.website.com/api/v4
+
+  ingress:
+    hosts:
+      - metrics.companyname-dev.com
+    annotations:
+      kubernetes.io/ingress.class: infrastructure
+      # TODO: Add this again later when it is enabled
+      # nginx.ingress.kubernetes.io/auth-signin: "https://oauth.aws.companyname.com/oauth2/start?rd=https://$host$request_uri"
+      # nginx.ingress.kubernetes.io/auth-url: "https://oauth.aws.companyname.com/oauth2/auth"

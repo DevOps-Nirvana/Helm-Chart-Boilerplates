@@ -1,0 +1,152 @@
+grafana:
+
+  # Initial admin password, this user is deleted/disabled once logged in via oauth
+  adminPassword: "notasecurepassword"
+
+  # Only works on Linux
+  nodeSelector:
+    kubernetes.io/os: linux
+    # role: primary
+
+  image:
+    tag: 8.2.1
+
+  plugins:
+    - blackmirror1-singlestat-math-panel
+    - briangann-gauge-panel
+    - cloudflare-app
+    - farski-blendstat-panel
+    - grafana-worldmap-panel
+    - grafana-clock-panel
+    - grafana-simple-json-datasource
+    - grafana-piechart-panel
+    - grafana-polystat-panel
+    - camptocamp-prometheus-alertmanager-datasource
+    - jdbranham-diagram-panel
+    - michaeldmoore-annunciator-panel
+    - michaeldmoore-multistat-panel
+    - petrslavotinek-carpetplot-panel
+    - ryantxu-ajax-panel
+    - vonage-status-panel
+    # - xginn8-pagerduty-datasources  # THIS IS NOT GRAFANA 6.0 COMPATIBLE
+    - yesoreyeram-boomtable-panel
+
+  rbac:
+    pspEnabled: false
+
+  persistence:
+    enabled: true
+    # existingClaim: "grafana"
+    size: 1Gi # Grafana doesn't need much space
+    accessModes:
+      - ReadWriteOnce
+
+  deploymentStrategy:
+    type: Recreate # due to RWO persistent volume claims
+
+  ## Sidecars that collect the configmaps with specified label and stores the included files them into the respective folders
+  ## Requires at least Grafana 5 to work and can't be used together with parameters dashboardProviders, datasources and dashboards
+  sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+    datasources:
+      enabled: true
+      label: grafana_datasource
+    resources:
+      limits:
+        # cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 50m
+        memory: 50Mi
+
+  # env:
+  #   GF_EXPLORE_ENABLED: "true"
+  #   GF_SERVER_ROOT_URL: "https://grafana.website.com"
+
+  resources:
+    requests:
+      cpu: 1  # Lets give it a lot of umph for a faster interface, hopefully
+      memory: 256Mi
+    limits:
+      cpu: 4
+      memory: 256Mi
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: prometheus
+        type: prometheus
+        url: http://prometheus-server.infrastructure.svc.cluster.local/prometheus
+        access: proxy
+        isDefault: true
+      - name: "cloudwatch"
+        type: cloudwatch
+        jsonData:
+          authType: keys
+          defaultRegion: us-east-1
+        # This allows readonly access to CloudWatch so no worries about committing this to the repo
+        secureJsonData:
+          accessKey: "XXXXXXXX"
+          secretKey: "YYYYYYYYYYYYYYYY"
+        isDefault: false
+      # - name: Loki
+      #   type: loki
+      #   access: proxy
+      #   url: http://localhost:3100
+      #   jsonData:
+      #     maxLines: 1000
+
+  grafana.ini:
+    server:
+      root_url: https://metrics.aws.companyname.com
+    # Once you login once and make one of the users an admin then you can disable basic auth
+    auth.basic:
+      enabled: false
+      disable_login_form: true
+
+    # auth.google:
+    #   enabled: "true"
+    #   client_id: "clientidgohere.apps.googleusercontent.com"
+    #   client_secret: "clientsecrethere"
+    #   scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
+    #   auth_url: https://accounts.google.com/o/oauth2/auth
+    #   token_url: https://accounts.google.com/o/oauth2/token
+    #   allowed_domains: ""
+    #   allow_sign_up: true
+
+    # auth.generic_oauth:
+    #   enabled: "true"
+    #   client_id: "puts.random.stuff.here"
+    #   client_secret: "secretgoesHere"
+    #   scopes: "user:email"
+    #   auth_url: "https://oauth.website.com/oauth2/start?rd=https://grafana.website.com/login/generic_oauth"
+    #   token_url: ""
+    #   api_url: "https://oauth.website.com/oauth2/userinfo"
+    #   allowed_domains: ""
+    #   allow_sign_up: "true"
+    #   send_client_credentials_via_post: "false"
+    #
+    #
+    # auth.gitlab:
+    #   enabled: true
+    #   allow_sign_up: true
+    #   client_id: 123123123123
+    #   client_secret: 123123123123
+    #   scopes: read_user
+    #   auth_url: https://gitlab.123123123/oauth/authorize
+    #   token_url: https://gitlab.123123123/oauth/token
+    #   api_url: https://gitlab.companyname.com/api/v4
+    #   # Automatically make the user an admin in Grafana if they're an admin in Gitlab
+    #   role_attribute_path: "is_admin && 'Admin' || 'Viewer'"
+    #   # role_attribute_strict: true
+    #   allow_assign_grafana_admin: true
+
+  ingress:
+    enabled: true
+    hosts:
+      - grafana.REPLACEME.com
+    # path: /?(.*)
+    path: /

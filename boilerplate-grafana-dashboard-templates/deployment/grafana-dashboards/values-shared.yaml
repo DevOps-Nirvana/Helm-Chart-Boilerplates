@@ -1,0 +1,2 @@
+# Only on shared do we want the gitlab dashboards
+enableGitlabDashboards: true
