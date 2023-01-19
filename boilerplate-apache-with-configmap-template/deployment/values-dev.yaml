@@ -1,0 +1,10 @@
+deployment:
+  ingress:
+    annotations:
+      kubernetes.io/ingress.class: "infrastructure"
+    hosts:
+      - host: proxying.your-website.com
+        paths:
+          - /
+
+proxy_url: "https://google.com/"

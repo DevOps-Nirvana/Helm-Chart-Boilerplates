@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: http-proxy
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    meta.helm.sh/release-name: http-proxy
+data:
+  kubernetes.conf: |
+    Options FollowSymLinks ExecCGI
+    Header add X-Forwarded-Proto "https"
+    RequestHeader set X-Forwarded-Proto "https"
+
+    # rewrite to HTTPS except if prefixed by api
+    # RewriteEngine On
+    # RewriteCond %{REQUEST_URI} !^/api.*
+    # RewriteRule (.*) https://%{HTTP_HOST}$1 [R,L]
+
+    # Setup our proxying
+    SSLProxyEngine On
+    SSLProxyCheckPeerCN off
+    SSLProxyCheckPeerExpire off
+
+    ProxyPreserveHost On
+    ProxyPass / {{ .Values.proxy_url | quote }}
+    ProxyPassReverse / {{ .Values.proxy_url | quote }}
